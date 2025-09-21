@@ -1,5 +1,5 @@
 const pool = require("../config/database");
-const logger = require("../utils/logger");
+const {logger} = require("../utils/logger");
 const queries = require("../db/queries");
 
 exports.readList = async (req, res) => {
@@ -10,4 +10,4 @@ exports.readList = async (req, res) => {
         logger.error(`Database Error: ${error.message}`);
         res.status(500).json({ error: "Internal Server Error" });
     }
-}
+};

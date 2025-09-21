@@ -1,5 +1,5 @@
 const pool = require("../config/database");
-const logger = require("../utils/logger");
+const {logger} = require("../utils/logger");
 const queries = require("../db/queries");
 const moment = require("moment-timezone");
 
@@ -11,26 +11,28 @@ exports.getRecommendations = async (req, res) => {
         logger.error(`Database Error: ${error.message}`);
         res.status(500).json({error: "Internal Server Error"});
     }
-}
+};
 
 exports.addRecommendation = async (req, res) => {
     const {userId, title, author, workId} = req.body;
     if (!userId || !title || !author || !workId) {
-        return res.status(400).json({error: "Missing required fields"});
+        res.status(400).json({error: "Missing required fields"});
+        return;
     }
 
     try {
-        await pool.query(queries.ADD_RECOMMENDATION, [userId, title, author, workId, moment().tz('America/Chicago').format('YYY-MM-DD')]);
+        await pool.query(queries.ADD_RECOMMENDATION, [userId, title, author, workId, moment().tz('America/Chicago').format('YYYY-MM-DD')]);
+        res.status(204).json({message: 'Recommendation added successfully.'});
     } catch (error) {
         if (error.code === '23505') {
-            logger.warn(`User ${userId} attempted to add a duplicate book - title ${title}`)
+            logger.warn(`User ${userId} attempted to add a duplicate book - title ${title}`);
             res.status(400).json({error: "Cannot add a duplicate book"});
         } else {
             logger.error(error.message);
             res.status(500).json({error: "Internal Server Error"});
         }
     }
-}
+};
 
 exports.deleteRecommendation = async (req, res) => {
     const {bookId} = req.params;
@@ -40,9 +42,9 @@ exports.deleteRecommendation = async (req, res) => {
     }
 
     try {
-        await pool.query(queries.DELETE_RECOMMENDATION, [bookId])
+        await pool.query(queries.DELETE_RECOMMENDATION, [bookId]);
     } catch (error) {
         logger.error(error.message);
         res.status(500).json({error: "Internal Server Error"});
     }
-}
+};

@@ -1,5 +1,5 @@
 const pool = require("../config/database");
-const logger = require("../utils/logger");
+const {logger} = require("../utils/logger");
 const queries = require("../db/queries");
 const moment = require("moment-timezone");
 
@@ -20,24 +20,24 @@ exports.getCurrentRead = async (req, res) => {
 
 exports.setCurrentRead = async (req, res) => {
     try {
-        const { currentReadRows } = await pool.query(queries.GET_CURRENT_READ);
+        const { rows: currentReadRows } = await pool.query(queries.GET_CURRENT_READ);
         const { bookId } = req.query;
 
         if (currentReadRows.length === 1) {
             return res.status(404).json({ message: "Current read is not set" });
         } else if (currentReadRows.length === 0 ) {
-            const date = moment().tz('America/Chicago').format('YYY-MM-DD');
-            await pool.query(queries.SET_CURRENT_READ, [date, bookId])
+            const date = moment().tz('America/Chicago').format('YYYY-MM-DD');
+            await pool.query(queries.SET_CURRENT_READ, [date, bookId]);
         }
     } catch (error) {
         logger.error(`Database Error: ${error.message}`);
         res.status(500).json({ error: "Internal Server Error" });
     }
-}
+};
 
 exports.removeCurrentRead = async (req, res) => {
     try {
-        const { currentReadRows } = await pool.query(queries.GET_CURRENT_READ);
+        const { rows: currentReadRows } = await pool.query(queries.GET_CURRENT_READ);
 
         if (currentReadRows.length === 0) {
             return res.status(404).json({ message: "Current read is not set" });
@@ -48,12 +48,12 @@ exports.removeCurrentRead = async (req, res) => {
         logger.error(`Database Error: ${error.message}`);
         res.status(500).json({ error: "Internal Server Error" });
     }
-}
+};
 
 exports.markCurrentReadFinished = async (req, res) => {
     try {
-        const { currentReadRows } = await pool.query(queries.GET_CURRENT_READ);
-        const date = moment.tz('America/Chicago').format('YYY-MM-DD');
+        const { rows: currentReadRows } = await pool.query(queries.GET_CURRENT_READ);
+        const date = moment.tz('America/Chicago').format('YYYY-MM-DD');
 
         if (currentReadRows.length === 1) {
             await pool.query(queries.MARK_CURRENT_READ_FINISHED, [date]);
@@ -64,4 +64,4 @@ exports.markCurrentReadFinished = async (req, res) => {
         logger.error(`Database Error: ${error.message}`);
         res.status(500).json({ error: "Internal Server Error" });
     }
-}
+};
